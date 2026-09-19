@@ -1,5 +1,14 @@
 ###
-
 GET https://statsapi.mlb.com/api/v1/schedule?sportId=1
 
+###
+GET https://statsapi.mlb.com/api/v1/sports/1/players
 
+###
+GET https://statsapi.mlb.com/api/v1/teams?sportId=1
+
+###
+GET https://statsapi.mlb.com/api/v1/leagues
+
+###
+GET https://statsapi.mlb.com/api/v1/seasons?all=true&sportId=1

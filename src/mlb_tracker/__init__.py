@@ -1,12 +1,11 @@
 import json
 import os
-import platform
-import subprocess
 from datetime import UTC, datetime
 
 import requests
 
-URL = "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
+URL = "https://statsapi.mlb.com/api/v1/"
+SPORT_ID = "1"
 
 
 def get_todays_games():
@@ -17,56 +16,62 @@ def get_todays_games():
 
     if not os.path.isfile(file_path):
         with open(file_path, "w") as f:
-            json.dump(requests.get(URL).json(), f, indent=4)
+            json.dump(requests.get(URL + f"schedule?{SPORT_ID}=1").json(), f, indent=4)
 
     with open(file_path, "r") as f:
         return json.load(f)["dates"][0]["games"]
 
 
+def get_players():
+    """
+    Get all players from json if available, else makes a request
+    """
+    file_path = "res/players.json"
+
+    if not os.path.isfile(file_path):
+        with open(file_path, "w") as f:
+            json.dump(
+                requests.get(URL + f"sports/{SPORT_ID}/players").json(), f, indent=4
+            )
+
+    with open(file_path, "r") as f:
+        return json.load(f)["people"]
+
+
+def get_teams():
+    """
+    Get all teams from json if available, else makes a request
+    """
+    file_path = "res/teams.json"
+
+    if not os.path.isfile(file_path):
+        with open(file_path, "w") as f:
+            json.dump(
+                requests.get(URL + f"/teams?sportId={SPORT_ID}").json(), f, indent=4
+            )
+
+    with open(file_path, "r") as f:
+        return json.load(f)["teams"]
+
+
 def show_results(games):
-    print(f" --- GAMES ON {datetime.now(tz=UTC).strftime('%m %d, %Y')} --- ")
+    print(
+        f" {'=' * 10} GAMES ON {datetime.now(tz=UTC).strftime('%m %d, %Y')} {'=' * 10} "
+    )
 
     for game in games:
-        away = game["teams"]["away"]
-        home = game["teams"]["home"]
+        away: dict = game["teams"]["away"]
+        home: dict = game["teams"]["home"]
 
         print(
             f"{game['status']['abstractGameState']}: "
             + f"{away['team']['name']} @ {home['team']['name']} "
-            + f"{away['score']} - {home['score']}"
+            + f"{away.get('score', '0')} - {home.get('score', '0')}"
         )
-
-
-def other():
-    # res = requests.get(URL)
-    # res: dict = res.json()
-
-    # print(res["dates"])
-    with open("res/test.json", "r") as f:
-        data = json.load(f)
-
-    games = [game for game in data["dates"][0]["games"]]
-
-    print(f"--- GAMES ON {data['dates'][0]['date']} ---")
-
-    for game in games:
-        away = game["teams"]["away"]
-        home = game["teams"]["home"]
-
-        print(
-            f"{game['status']['abstractGameState']}: "
-            + f"{away['team']['name']} @ "
-            + f"{home['team']['name']}"
-            # + f"{away['score']} - {home['score']}"
-        )
-
-    with open("res/written.json", "w") as f:
-        json.dump(data, f, indent=4)
 
 
 def main():
-    games = get_todays_games()
-    show_results(games)
+    pass
 
 
 if __name__ == "__main__":
